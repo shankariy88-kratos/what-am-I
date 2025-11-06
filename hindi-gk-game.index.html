@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मैं क्या हूँ? | Hindi GK Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+            padding: 12px;
+            max-height: 98vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .timer-line {
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background: #E8F5E9;
+            z-index: 1;
+            border: 1px solid #ddd;
+        }
+
+        .timer-line-left {
+            left: 0;
+            border-radius: 15px 0 0 15px;
+            border-right: none;
+        }
+
+        .timer-line-right {
+            right: 0;
+            border-radius: 0 15px 15px 0;
+            border-left: none;
+        }
+
+        .timer-line-fill {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, 
+                #4CAF50 0%,     /* Leaf Green */
+                #8BC34A 20%,    /* Light Green */
+                #CDDC39 40%,    /* Lime */
+                #FFEB3B 50%,    /* Yellow */
+                #FFC107 60%,    /* Amber */
+                #FF9800 70%,    /* Orange */
+                #FF5722 85%,    /* Deep Orange */
+                #F44336 100%    /* Red */
+            );
+            transition: height 1s linear;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+        }
+
+        .timer-line-fill.warning {
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.9);
+            animation: pulse-glow 0.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(244, 67, 54, 0.9); }
+            50% { box-shadow: 0 0 30px rgba(244, 67, 54, 1); }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #FF6B6B;
+            position: absolute;
+            animation: confetti-fall 3s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .game-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .intro-screen {
+            text-align: center;
+            display: block;
+        }
+
+        .intro-screen.hidden {
+            display: none;
+        }
+
+        .intro-logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .intro-title {
+            color: #FF6B6B;
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .intro-instructions {
+            background: #FFF3E0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .instruction-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .instruction-icon {
+            font-size: 1.5em;
+            min-width: 30px;
+        }
+
+        .instruction-text {
+            color: #333;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .instruction-highlight {
+            font-weight: bold;
+            color: #FF6B6B;
+        }
+
+        .start-game-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .start-game-btn:active {
+            transform: scale(0.98);
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 1.3em;
+            margin-bottom: 0;
+        }
+
+        .restart-game-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 2px solid #FF6B6B;
+            color: #FF6B6B;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .restart-game-btn:active {
+            transform: translateY(-50%) scale(0.95);
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .sound-toggle-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 2px solid #FF6B6B;
+            color: #FF6B6B;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sound-toggle-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .sound-toggle-btn.muted {
+            opacity: 0.5;
+        }
+
+        .score-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border: 2px solid #FFE0E0;
+            border-radius: 10px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.7em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .score-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #FF6B6B;
+        }
+
+        .timer-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-label {
+            font-size: 0.7em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .timer {
+            display: inline-flex;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            font-size: 1.4em;
+            font-weight: bold;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .timer.warning {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #FF4757 0%, #FF6348 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .clues-container {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #e9ecef;
+            position: relative;
+        }
+
+        .clues-container::after {
+            content: '▼';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #FF6B6B;
+            font-size: 1.2em;
+            padding: 0 10px;
+        }
+
+        .clue {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            font-size: 0.92em;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            line-height: 1.5;
+            letter-spacing: 0.2px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-left: 4px solid #FF6B6B;
+            color: #333;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .clue.loading {
+            opacity: 1;
+            transform: translateY(0);
+            background: #fafafa;
+            border-left: 4px solid #ddd;
+            color: transparent;
+        }
+
+        .clue.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 25px;
+            height: 25px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #FF6B6B;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .clue.loading::after {
+            content: 'लोड हो रहा है...';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 18px);
+            font-size: 0.7em;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .clue.placeholder {
+            opacity: 1;
+            transform: translateY(0);
+            background: #fafafa;
+            border-left: 4px dashed #ddd;
+            color: transparent;
+            font-style: italic;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            cursor: default;
+            position: relative;
+        }
+
+        .clue.placeholder::before {
+            content: '🔒 Clue जल्द आएगा...';
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .clue.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .clue-1 {
+            border-left-color: #FF6B6B;
+            border-left-width: 5px;
+        }
+
+        .clue-2 {
+            border-left-color: #4ECDC4;
+            border-left-width: 4px;
+        }
+
+        .clue-3 {
+            border-left-color: #FFA726;
+            border-left-width: 4px;
+        }
+
+        .options-label {
+            text-align: center;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option {
+            padding: 16px 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .option:active {
+            transform: scale(0.96);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .option.correct {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+            color: white;
+            border-color: #4CAF50;
+            border-width: 3px;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+            animation: correctAnim 0.5s;
+        }
+
+        .option.wrong {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+            color: white;
+            border-color: #FF5252;
+            border-width: 3px;
+            box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4);
+            animation: wrongAnim 0.5s;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes correctAnim {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes wrongAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .trivia-container {
+            background: #F5F5F5;
+            border: 2px solid #DDD;
+            border-left: 4px solid #FF6B6B;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: max-height 0.4s ease, opacity 0.4s ease, transform 0.4s ease, padding 0.4s ease;
+        }
+
+        .trivia-container.show {
+            max-height: 500px;
+            opacity: 1;
+            transform: translateY(0);
+            padding: 10px;
+        }
+
+        .trivia-title {
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+        }
+
+        .trivia-text {
+            color: #555;
+            line-height: 1.5;
+            font-size: 0.8em;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 3px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .next-btn.show {
+            max-height: 100px;
+            padding: 10px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .next-btn:active {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+        }
+
+        .final-score {
+            text-align: center;
+            display: none;
+            padding: 15px 0;
+        }
+
+        .final-score.show {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        .final-score h2 {
+            color: #FF6B6B;
+            font-size: 1.8em;
+            margin-bottom: 12px;
+        }
+
+        .final-score p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .restart-btn {
+            padding: 10px 35px;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 3px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .restart-btn:active {
+            transform: scale(0.98);
+        }
+
+        .points-earned {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 10px 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease;
+        }
+
+        .points-earned.show {
+            max-height: 100px;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .points-earned.positive {
+            color: #2E7D32;
+        }
+
+        .points-earned.zero {
+            color: #C62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Confetti Container -->
+        <div class="confetti-container" id="confettiContainer"></div>
+        
+        <!-- Intro Screen -->
+        <div class="intro-screen" id="introScreen">
+            <div class="intro-logo">🤔</div>
+            <h1 class="intro-title">मैं क्या हूँ?</h1>
+            
+            <div class="intro-instructions">
+                <div class="instruction-item">
+                    <div class="instruction-icon">⏱️</div>
+                    <div class="instruction-text">
+                        हर सवाल के लिए <span class="instruction-highlight">25 सेकंड</span> का समय मिलेगा
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">🔍</div>
+                    <div class="instruction-text">
+                        हर कुछ सेकंड में एक नया Clue दिखेगा।<br>
+                        <span class="instruction-highlight">जल्दी जवाब दो = ज्यादा अंक मिलेंगे!</span><br>
+                        <small style="color: #888;">(पहले Clue पर = 15 अंक, दूसरे पर = 10 अंक, तीसरे पर = 5 अंक)</small>
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">🎯</div>
+                    <div class="instruction-text">
+                        <span class="instruction-highlight">स्कोरिंग:</span><br>
+                        • पहले Clue पर सही जवाब = 15 अंक<br>
+                        • दूसरे Clue पर सही जवाब = 10 अंक<br>
+                        • तीसरे Clue पर सही जवाब = 5 अंक<br>
+                        • गलत जवाब या समय खत्म = 0 अंक
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">💡</div>
+                    <div class="instruction-text">
+                        हर जवाब के बाद एक <span class="instruction-highlight">रोचक तथ्य</span> मिलेगा
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">📊</div>
+                    <div class="instruction-text">
+                        कुल <span class="instruction-highlight">10 प्रश्न</span>, अधिकतम <span class="instruction-highlight">150 अंक</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="start-game-btn" onclick="startGame()">
+                🎮 खेल शुरू करें
+            </button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+        <!-- Timer Lines -->
+        <div class="timer-line timer-line-left">
+            <div class="timer-line-fill" id="timerLineLeft"></div>
+        </div>
+        <div class="timer-line timer-line-right">
+            <div class="timer-line-fill" id="timerLineRight"></div>
+        </div>
+
+        <!-- Game Content -->
+        <div class="game-content">
+        <div class="header">
+            <button class="sound-toggle-btn" id="soundToggle" onclick="toggleSound()">🔊</button>
+            <h1>🤔 मैं क्या हूँ?</h1>
+            <button class="restart-game-btn" onclick="location.reload()">🔄 नया गेम</button>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">प्रश्न</div>
+                <div class="score-value" id="questionNumber">1/10</div>
+            </div>
+            <div class="timer-item">
+                <div class="timer-label">समय</div>
+                <div class="timer" id="timer">25</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">स्कोर</div>
+                <div class="score-value" id="totalScore">0</div>
+            </div>
+        </div>
+
+        <div class="clues-container">
+            <div class="clue clue-1" id="clue1"></div>
+            <div class="clue clue-2" id="clue2"></div>
+            <div class="clue clue-3" id="clue3"></div>
+        </div>
+
+        <div class="options-label">जवाब चुनें:</div>
+        <div class="options-container" id="optionsContainer"></div>
+
+        <div class="points-earned" id="pointsEarned"></div>
+
+        <div class="trivia-container" id="triviaContainer">
+            <div class="trivia-title">💡 रोचक तथ्य</div>
+            <div class="trivia-text" id="triviaText"></div>
+        </div>
+
+        <button class="next-btn" id="nextBtn">अगला प्रश्न →</button>
+
+        <div class="final-score" id="finalScore">
+            <h2>🎉 खेल समाप्त!</h2>
+            <p>आपका अंतिम स्कोर: <span id="finalScoreValue">0</span>/150</p>
+            <button class="restart-btn" onclick="location.reload()">फिर से खेलें</button>
+        </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                clues: [
+                    "🏏 इस महान खिलाड़ी को 'कर्नल' के नाम से जाना जाता था",
+                    "🏟️ वानखेड़े स्टेडियम में लगातार तीन टेस्ट शतक लगाने वाले एकमात्र भारतीय बल्लेबाज़",
+                    "👨‍💼 भारतीय क्रिकेट टीम के पूर्व कप्तान और BCCI के चयनकर्ता रहे"
+                ],
+                options: ["सुनील गावस्कर", "दिलीप वेंगसरकर", "मोहिंदर अमरनाथ", "कपिल देव"],
+                correct: 1,
+                trivia: "दिलीप वेंगसरकर ने अपने करियर में 116 टेस्ट मैच खेले और 6868 रन बनाए। वे 1987-89 के दौरान भारतीय टीम के कप्तान रहे और वानखेड़े स्टेडियम में उनके प्रदर्शन की वजह से इसे 'वेंगसरकर का घर' कहा जाता था।"
+            },
+            {
+                clues: [
+                    "🏛️ यह मंदिर द्रविड़ वास्तुकला का उत्कृष्ट नमूना है और 1000 साल से भी पुराना है",
+                    "🗿 इसका विशाल विमान (शिखर) 66 मीटर ऊंचा है और यह ग्रेनाइट से बना है",
+                    "🕉️ तमिलनाडु के तंजावुर में स्थित यह शिव मंदिर चोल राजा राजराज प्रथम द्वारा बनवाया गया था"
+                ],
+                options: ["मीनाक्षी मंदिर", "बृहदेश्वर मंदिर", "रामेश्वरम मंदिर", "कांचीपुरम मंदिर"],
+                correct: 1,
+                trivia: "बृहदेश्वर मंदिर को 'बिग टेम्पल' के नाम से भी जाना जाता है। यह यूनेस्को विश्व धरोहर स्थल है। इसकी सबसे आश्चर्यजनक बात यह है कि इसके शिखर पर रखा गया 80 टन का पत्थर बिना किसी आधुनिक तकनीक के चढ़ाया गया था।"
+            },
+            {
+                clues: [
+                    "🎖️ इन्होंने द्वितीय विश्व युद्ध के दौरान जापान से सहायता लेकर आज़ाद हिन्द फ़ौज का गठन किया",
+                    "✈️ इनकी मृत्यु 1945 में एक विमान दुर्घटना में हुई थी, हालांकि इसे लेकर विवाद है",
+                    "📢 'तुम मुझे खून दो, मैं तुम्हें आज़ादी दूंगा' यह प्रसिद्ध नारा इन्हीं का है"
+                ],
+                options: ["भगत सिंह", "चंद्रशेखर आज़ाद", "सुभाष चंद्र बोस", "राम प्रसाद बिस्मिल"],
+                correct: 2,
+                trivia: "सुभाष चंद्र बोस को 'नेताजी' के नाम से जाना जाता है। उन्होंने सिंगापुर में आज़ाद हिन्द सरकार की स्थापना की थी। उनका जन्म 23 जनवरी को होता है जिसे भारत में 'पराक्रम दिवस' के रूप में मनाया जाता है।"
+            },
+            {
+                clues: [
+                    "🐾 यह दुर्लभ जानवर हिमालय की पूर्वी पहाड़ियों और चीन में पाया जाता है",
+                    "🌳 यह बांस खाने वाला स्तनधारी है और पेड़ों पर चढ़ने में माहिर है",
+                    "🔴 इसका रंग लाल-भूरा होता है और यह दिखने में रैकून की तरह लगता है"
+                ],
+                options: ["लाल पांडा", "हिम तेंदुआ", "लाल लोमड़ी", "लंगूर"],
+                correct: 0,
+                trivia: "लाल पांडा को 'फायर फॉक्स' भी कहा जाता है। यह IUCN रेड लिस्ट में लुप्तप्राय प्रजाति है। मोज़िला फायरफॉक्स ब्राउज़र का नाम इसी प्यारे जानवर से प्रेरित है। भारत में यह सिक्किम और अरुणाचल प्रदेश में पाया जाता है।"
+            },
+            {
+                clues: [
+                    "🌾 यह भारत का सबसे बड़ा नमक का रेगिस्तान है जो लगभग 30,000 वर्ग किलोमीटर में फैला है",
+                    "🏜️ मानसून के दौरान यह पानी से भर जाता है और एक विशाल दर्पण जैसा दिखता है",
+                    "🦩 गुजरात में स्थित यह स्थान जंगली गधों के अभयारण्य के लिए प्रसिद्ध है"
+                ],
+                options: ["थार रेगिस्तान", "कच्छ का रण", "सांभर झील", "चिल्का झील"],
+                correct: 1,
+                trivia: "कच्छ का रण दुनिया के सबसे बड़े नमक के रेगिस्तानों में से एक है। यहां हर साल 'रण उत्सव' मनाया जाता है जो पूर्णिमा की रातों में अद्भुत दृश्य प्रस्तुत करता है। यह स्थान भारतीय जंगली गधे (खुर) का एकमात्र प्राकृतिक आवास है।"
+            },
+            {
+                clues: [
+                    "📰 यह भारत का सबसे बड़ा हिंदी समाचार पत्र है जिसकी शुरुआत 1958 में हुई थी",
+                    "🗞️ इसके संस्थापक रमेश चंद्र अग्रवाल थे और मुख्यालय भोपाल में है",
+                    "📊 यह दुनिया का तीसरा सबसे बड़ा अखबार है जो 14 राज्यों में 65 संस्करण निकालता है"
+                ],
+                options: ["दैनिक जागरण", "दैनिक भास्कर", "नवभारत टाइम्स", "अमर उजाला"],
+                correct: 1,
+                trivia: "दैनिक भास्कर का नाम 'भास्कर' (सूर्य) से लिया गया है। यह भारत के सबसे बड़े मीडिया समूहों में से एक है। 2018 में इसने 175 लाख से अधिक दैनिक पाठक संख्या दर्ज की थी।"
+            },
+            {
+                clues: [
+                    "🏝️ यह भारत का सबसे दक्षिणी बिंदु है जो भूमध्य रेखा से केवल 876 किमी दूर है",
+                    "🌊 2004 की सुनामी में यह 4.25 मीटर जलमग्न हो गया था और अब पानी में डूबा हुआ है",
+                    "📍 ग्रेट निकोबार द्वीप पर स्थित यह स्थान भारत की पहली महिला प्रधानमंत्री के नाम पर है"
+                ],
+                options: ["इंदिरा प्वाइंट", "कन्याकुमारी", "लक्षद्वीप", "पोर्ट ब्लेयर"],
+                correct: 0,
+                trivia: "इंदिरा प्वाइंट को पहले 'पिगमेलियन प्वाइंट' और 'पारसन्स प्वाइंट' के नाम से जाना जाता था। 1985 में इसका नाम इंदिरा गांधी के सम्मान में बदला गया। यह इंडोनेशिया के सुमात्रा द्वीप के बहुत करीब है।"
+            },
+            {
+                clues: [
+                    "👩‍🚀 यह भारतीय मूल की पहली महिला अंतरिक्ष यात्री थीं जो अमेरिकी नागरिक बनीं",
+                    "🚀 2003 में स्पेस शटल कोलंबिया दुर्घटना में उनकी मृत्यु हो गई थी",
+                    "⭐ हरियाणा में जन्मी इन्होंने 1997 में पहली बार अंतरिक्ष यात्रा की थी"
+                ],
+                options: ["सुनीता विलियम्स", "कल्पना चावला", "सिरिशा बंदला", "स्वाति मोहन"],
+                correct: 1,
+                trivia: "कल्पना चावला का जन्म करनाल, हरियाणा में हुआ था। वे एयरोस्पेस इंजीनियर थीं और NASA में 1994 में शामिल हुईं। उन्होंने अपने पहले मिशन में 372 घंटे अंतरिक्ष में बिताए। उनके सम्मान में कई संस्थानों और सड़कों का नाम रखा गया है।"
+            },
+            {
+                clues: [
+                    "👑 इस शासक ने 1540 में हुमायूँ को हराकर भारत में सूर वंश की स्थापना की",
+                    "🛣️ ग्रांड ट्रंक रोड का निर्माण इन्होंने करवाया और रुपया मुद्रा की शुरुआत की",
+                    "⚔️ 1545 में कालिंजर किले की घेराबंदी के दौरान तोप विस्फोट में इनकी मृत्यु हो गई"
+                ],
+                options: ["शेर शाह सूरी", "अकबर", "इब्राहिम लोदी", "बाबर"],
+                correct: 0,
+                trivia: "शेर शाह सूरी का असली नाम फरीद खान था। उन्होंने केवल 5 साल शासन किया लेकिन प्रशासनिक सुधारों के लिए प्रसिद्ध हैं। उन्होंने डाक व्यवस्था, सड़क निर्माण, और भूमि सुधार किए। अकबर ने उनकी कई नीतियों को अपनाया।"
+            },
+            {
+                clues: [
+                    "💧 यह महाराष्ट्र में बुलढाणा जिले में स्थित एक खारे पानी की झील है",
+                    "🌋 यह लगभग 52,000 साल पहले उल्कापिंड के गिरने से बनी क्रेटर झील है",
+                    "🔬 यह विश्व की केवल तीन बेसाल्टिक चट्टानों में बनी उल्कापिंड झीलों में से एक है"
+                ],
+                options: ["चिल्का झील", "लोनार झील", "पुलीकट झील", "सांभर झील"],
+                correct: 1,
+                trivia: "लोनार झील की गहराई लगभग 137 मीटर है और व्यास 1.8 किलोमीटर है। इसका पानी खारा और क्षारीय दोनों है। NASA ने चंद्रमा के क्रेटर्स का अध्ययन करने के लिए इस झील का उपयोग किया है। यह एक राष्ट्रीय भू-विरासत स्मारक है।"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let totalScore = 0;
+        let timeLeft = 25;
+        let timerInterval;
+        let answered = false;
+        let audioContext;
+        let tickInterval;
+        let soundEnabled = true;
+
+        // Create confetti animation
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confettiContainer');
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+            const confettiCount = 50;
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random positioning
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                
+                // Random color
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Random size
+                const size = Math.random() * 8 + 5;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                
+                // Random shape (circle or square)
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                }
+                
+                // Random delay
+                confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                
+                // Random duration
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                confettiContainer.appendChild(confetti);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3500);
+            }
+        }
+
+        // Toggle sound on/off
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+                if (tickInterval) clearInterval(tickInterval);
+            }
+        }
+
+        // Initialize Audio Context
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Play tick sound
+        function playTickSound() {
+            if (!audioContext || !soundEnabled) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Play correct answer sound
+        function playCorrectSound() {
+            if (!audioContext || !soundEnabled) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            // Happy ascending notes
+            oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C
+            oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E
+            oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Play wrong answer sound
+        function playWrongSound() {
+            if (!audioContext || !soundEnabled) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Play button click sound
+        function playClickSound() {
+            if (!audioContext || !soundEnabled) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 1000;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.05);
+        }
+
+        // Play clue reveal sound
+        function playClueSound() {
+            if (!audioContext || !soundEnabled) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 600;
+            oscillator.type = 'triangle';
+            
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function startGame() {
+            // Initialize audio on user interaction
+            initAudio();
+            playClickSound();
+            
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('active');
+            
+            // Setup next button handler
+            document.getElementById('nextBtn').onclick = function() {
+                playClickSound();
+                if (tickInterval) clearInterval(tickInterval);
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    startQuestion();
+                } else {
+                    showFinalScore();
+                }
+            };
+            
+            startQuestion();
+        }
+
+        function startQuestion() {
+            answered = false;
+            timeLeft = 25;
+            
+            document.getElementById('questionNumber').textContent = `${currentQuestion + 1}/10`;
+            document.getElementById('totalScore').textContent = totalScore;
+            
+            // Reset timer lines
+            const timerLineLeft = document.getElementById('timerLineLeft');
+            const timerLineRight = document.getElementById('timerLineRight');
+            timerLineLeft.style.transition = 'height 1s linear';
+            timerLineRight.style.transition = 'height 1s linear';
+            timerLineLeft.style.height = '0%';
+            timerLineRight.style.height = '0%';
+            timerLineLeft.classList.remove('warning');
+            timerLineRight.classList.remove('warning');
+            
+            // Update next button text based on question number
+            if (currentQuestion === questions.length - 1) {
+                document.getElementById('nextBtn').textContent = '📊 स्कोर देखें';
+            } else {
+                document.getElementById('nextBtn').textContent = 'अगला प्रश्न →';
+            }
+            
+            // Reset UI
+            document.getElementById('clue1').classList.remove('revealed', 'loading', 'placeholder');
+            document.getElementById('clue2').classList.remove('revealed', 'loading', 'placeholder');
+            document.getElementById('clue3').classList.remove('revealed', 'loading', 'placeholder');
+            document.getElementById('triviaContainer').classList.remove('show');
+            document.getElementById('nextBtn').classList.remove('show');
+            document.getElementById('pointsEarned').classList.remove('show');
+            document.getElementById('timer').classList.remove('warning');
+            
+            // Store clues in data attributes (don't show text yet)
+            const q = questions[currentQuestion];
+            document.getElementById('clue1').setAttribute('data-clue-text', q.clues[0]);
+            document.getElementById('clue2').setAttribute('data-clue-text', q.clues[1]);
+            document.getElementById('clue3').setAttribute('data-clue-text', q.clues[2]);
+            
+            // Clear visible text
+            document.getElementById('clue1').textContent = '';
+            document.getElementById('clue2').textContent = '';
+            document.getElementById('clue3').textContent = '';
+            
+            // Show placeholders for clues 2 and 3
+            document.getElementById('clue2').classList.add('placeholder');
+            document.getElementById('clue3').classList.add('placeholder');
+            
+            // Reveal first clue with text
+            setTimeout(() => {
+                document.getElementById('clue1').textContent = q.clues[0];
+                document.getElementById('clue1').classList.add('revealed');
+            }, 100);
+            
+            // Create options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option';
+                btn.textContent = option;
+                btn.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+            
+            // Start timer
+            startTimer();
+        }
+
+        function startTimer() {
+            const timerEl = document.getElementById('timer');
+            const timerLineLeft = document.getElementById('timerLineLeft');
+            const timerLineRight = document.getElementById('timerLineRight');
+            timerEl.textContent = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                
+                // Update timer lines (inverse - as time decreases, line increases)
+                const progress = ((25 - timeLeft) / 25) * 100;
+                timerLineLeft.style.height = progress + '%';
+                timerLineRight.style.height = progress + '%';
+                
+                // Show loading state for second clue 1 second before reveal
+                if (timeLeft === 19) {
+                    document.getElementById('clue2').classList.remove('placeholder');
+                    document.getElementById('clue2').classList.add('loading');
+                }
+                
+                // Reveal second clue at 18 seconds (after 7 seconds)
+                if (timeLeft === 18) {
+                    const clue2 = document.getElementById('clue2');
+                    const clueText = clue2.getAttribute('data-clue-text');
+                    clue2.textContent = clueText;
+                    clue2.classList.remove('loading');
+                    clue2.classList.add('revealed');
+                    playClueSound();
+                }
+                
+                // Show loading state for third clue 1 second before reveal
+                if (timeLeft === 11) {
+                    document.getElementById('clue3').classList.remove('placeholder');
+                    document.getElementById('clue3').classList.add('loading');
+                }
+                
+                // Reveal third clue at 10 seconds (after another 8 seconds)
+                if (timeLeft === 10) {
+                    const clue3 = document.getElementById('clue3');
+                    const clueText = clue3.getAttribute('data-clue-text');
+                    clue3.textContent = clueText;
+                    clue3.classList.remove('loading');
+                    clue3.classList.add('revealed');
+                    timerEl.classList.add('warning');
+                    timerLineLeft.classList.add('warning');
+                    timerLineRight.classList.add('warning');
+                    playClueSound();
+                }
+                
+                // Start tick sound in last 5 seconds
+                if (timeLeft === 5 && soundEnabled) {
+                    tickInterval = setInterval(() => {
+                        playTickSound();
+                    }, 1000);
+                }
+                
+                // Time's up
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    if (tickInterval) clearInterval(tickInterval);
+                    if (!answered) {
+                        timeUp();
+                    }
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timerInterval);
+            if (tickInterval) clearInterval(tickInterval);
+            
+            // Stop timer line animation
+            const timerLineLeft = document.getElementById('timerLineLeft');
+            const timerLineRight = document.getElementById('timerLineRight');
+            timerLineLeft.style.transition = 'none';
+            timerLineRight.style.transition = 'none';
+            
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            // Reveal all clues immediately with their text
+            const clue1 = document.getElementById('clue1');
+            const clue2 = document.getElementById('clue2');
+            const clue3 = document.getElementById('clue3');
+            
+            clue1.textContent = clue1.getAttribute('data-clue-text') || clue1.textContent;
+            clue2.textContent = clue2.getAttribute('data-clue-text');
+            clue3.textContent = clue3.getAttribute('data-clue-text');
+            
+            clue1.classList.remove('loading', 'placeholder');
+            clue1.classList.add('revealed');
+            clue2.classList.remove('loading', 'placeholder');
+            clue2.classList.add('revealed');
+            clue3.classList.remove('loading', 'placeholder');
+            clue3.classList.add('revealed');
+            
+            // Disable all options
+            options.forEach(opt => opt.classList.add('disabled'));
+            
+            // Calculate points based on time remaining and which clue is visible
+            let points = 0;
+            if (timeLeft > 18) points = 15;  // Only first clue visible
+            else if (timeLeft > 10) points = 10;  // Second clue visible
+            else points = 5;  // Third clue visible
+            
+            if (selectedIndex === q.correct) {
+                // Correct answer
+                playCorrectSound();
+                createConfetti();
+                options[selectedIndex].classList.add('correct');
+                totalScore += points;
+                showPointsEarned(points);
+            } else {
+                // Wrong answer
+                playWrongSound();
+                options[selectedIndex].classList.add('wrong');
+                options[q.correct].classList.add('correct');
+                showPointsEarned(0);
+            }
+            
+            // Update total score display
+            document.getElementById('totalScore').textContent = totalScore;
+            
+            // Show trivia with smooth animation
+            setTimeout(() => {
+                const triviaContainer = document.getElementById('triviaContainer');
+                const nextBtn = document.getElementById('nextBtn');
+                const triviaText = document.getElementById('triviaText');
+                
+                triviaText.textContent = q.trivia;
+                triviaContainer.classList.add('show');
+                
+                // Show button slightly after trivia
+                setTimeout(() => {
+                    nextBtn.classList.add('show');
+                }, 200);
+            }, 600);
+        }
+
+        function timeUp() {
+            answered = true;
+            if (tickInterval) clearInterval(tickInterval);
+            playWrongSound();
+            
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            // Stop timer line animation
+            const timerLineLeft = document.getElementById('timerLineLeft');
+            const timerLineRight = document.getElementById('timerLineRight');
+            timerLineLeft.style.transition = 'none';
+            timerLineRight.style.transition = 'none';
+            
+            // Reveal all clues with their text
+            const clue1 = document.getElementById('clue1');
+            const clue2 = document.getElementById('clue2');
+            const clue3 = document.getElementById('clue3');
+            
+            clue1.textContent = clue1.getAttribute('data-clue-text') || clue1.textContent;
+            clue2.textContent = clue2.getAttribute('data-clue-text');
+            clue3.textContent = clue3.getAttribute('data-clue-text');
+            
+            clue1.classList.remove('loading', 'placeholder');
+            clue1.classList.add('revealed');
+            clue2.classList.remove('loading', 'placeholder');
+            clue2.classList.add('revealed');
+            clue3.classList.remove('loading', 'placeholder');
+            clue3.classList.add('revealed');
+            
+            // Disable all options and show correct answer
+            options.forEach((opt, index) => {
+                opt.classList.add('disabled');
+                if (index === q.correct) {
+                    opt.classList.add('correct');
+                }
+            });
+            
+            showPointsEarned(0);
+            
+            // Show trivia with smooth animation
+            setTimeout(() => {
+                const triviaContainer = document.getElementById('triviaContainer');
+                const nextBtn = document.getElementById('nextBtn');
+                const triviaText = document.getElementById('triviaText');
+                
+                triviaText.textContent = q.trivia;
+                triviaContainer.classList.add('show');
+                
+                // Show button slightly after trivia
+                setTimeout(() => {
+                    nextBtn.classList.add('show');
+                }, 200);
+            }, 600);
+        }
+
+        function showPointsEarned(points) {
+            const pointsEl = document.getElementById('pointsEarned');
+            if (points > 0) {
+                pointsEl.textContent = `+${points} अंक मिले! 🎉`;
+                pointsEl.className = 'points-earned show positive';
+            } else {
+                pointsEl.textContent = `0 अंक 😔`;
+                pointsEl.className = 'points-earned show zero';
+            }
+        }
+
+        function showFinalScore() {
+            document.querySelector('.score-board').style.display = 'none';
+            document.querySelector('.clues-container').style.display = 'none';
+            document.querySelector('.options-container').style.display = 'none';
+            document.querySelector('.options-label').style.display = 'none';
+            document.getElementById('triviaContainer').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('pointsEarned').style.display = 'none';
+            
+            document.getElementById('finalScoreValue').textContent = totalScore;
+            document.getElementById('finalScore').classList.add('show');
+        }
+    </script>
+</body>
+</html>
